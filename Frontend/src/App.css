@@ -1,14 +1,20 @@
-* {
-    color: #ececec;
-    font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-}
-
 .app {
-    background-color: #212121;
     display: flex;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(6, 6, 10, 0.55);
+    backdrop-filter: blur(2px);
+    animation: scrimIn 0.2s ease;
+}
+
+@keyframes scrimIn {
+    from {
+        opacity: 0;
+    }
 }

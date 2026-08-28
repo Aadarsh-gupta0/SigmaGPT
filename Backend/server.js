@@ -1,55 +1,57 @@
 import express from "express";
-import "dotenv/config";
 import cors from "cors";
-import mongoose from "mongoose";
+import config from "./config/index.js";
 import chatRoutes from "./routes/chat.js";
+import {initStore, getStore} from "./store/index.js";
+import {describeProviders} from "./providers/index.js";
 
 const app = express();
-const PORT = 8080;
 
-app.use(express.json());
-app.use(cors());
+app.use(express.json({limit: "1mb"}));
+app.use(cors({origin: config.corsOrigin}));
+
+app.get("/health", (req, res) => {
+    const {active, fallbackChain} = describeProviders();
+    res.json({status: "ok", storage: getStore().kind, provider: active, fallbackChain});
+});
 
 app.use("/api", chatRoutes);
 
-app.listen(PORT, () => {
-    console.log(`server running on ${PORT}`);
-    connectDB();
+app.use((req, res) => res.status(404).json({error: `No route for ${req.method} ${req.path}`}));
+
+app.use((err, req, res, next) => {
+    console.error(err);
+    if (res.headersSent) return next(err);
+    res.status(500).json({error: "Internal server error"});
 });
 
-const connectDB = async() => {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log("Connected with Database!");
-    } catch(err) {
-        console.log("Failed to connect with Db", err);
+const start = async () => {
+    await initStore();
+
+    const {active, providers} = describeProviders();
+    const ready = providers.filter((p) => p.ready).map((p) => p.id);
+
+    if (!active) {
+        console.warn("No answer provider is configured — see Backend/.env.example");
+    } else {
+        console.log(`Answer provider: ${active} (available: ${ready.join(", ")})`);
     }
-}
 
+    const server = app.listen(config.port, () => {
+        console.log(`SigmaGPT API listening on http://localhost:${config.port}`);
+    });
 
-// app.post("/test", async (req, res) => {
-//     const options = {
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/json",
-//             "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-//         },
-//         body: JSON.stringify({
-//             model: "gpt-4o-mini",
-//             messages: [{
-//                 role: "user",
-//                 content: req.body.message
-//             }]
-//         })
-//     };
+    const shutdown = async () => {
+        server.close();
+        await getStore().close?.();
+        process.exit(0);
+    };
 
-//     try {
-//         const response = await fetch("https://api.openai.com/v1/chat/completions", options);
-//         const data = await response.json();
-//         //console.log(data.choices[0].message.content); //reply
-//         res.send(data.choices[0].message.content);
-//     } catch(err) {
-//         console.log(err);
-//     }
-// });
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+};
 
+start().catch((err) => {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+});

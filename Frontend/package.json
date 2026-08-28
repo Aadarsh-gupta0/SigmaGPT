@@ -1,7 +1,7 @@
 {
-  "name": "frontend",
+  "name": "sigmagpt-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,8 +13,8 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
-    "react-spinners": "^0.17.0",
     "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

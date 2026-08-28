@@ -1,107 +1,113 @@
 import express from "express";
-import Thread from "../models/Thread.js";
-import getOpenAIAPIResponse from "../utils/openai.js";
+import {getStore} from "../store/index.js";
+import {describeProviders} from "../providers/index.js";
+import {completeAnswer, streamAnswer} from "../services/chatService.js";
 
 const router = express.Router();
 
-//test
-router.post("/test", async(req, res) => {
-    try {
-        const thread = new Thread({
-            threadId: "abc",
-            title: "Testing New Thread2"
-        });
+const fail = (res, status, error) => res.status(status).json({error});
 
-        const response = await thread.save();
-        res.send(response);
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({error: "Failed to save in DB"});
+/** Which free providers exist, and which one will actually answer. */
+router.get("/providers", (req, res) => {
+    res.json(describeProviders());
+});
+
+router.get("/thread", async (req, res) => {
+    try {
+        res.json(await getStore().listThreads());
+    } catch (err) {
+        console.error(err);
+        fail(res, 500, "Failed to fetch threads");
     }
 });
 
-//Get all threads
-router.get("/thread", async(req, res) => {
+router.get("/thread/:threadId", async (req, res) => {
     try {
-        const threads = await Thread.find({}).sort({updatedAt: -1});
-        //descending order of updatedAt...most recent data on top
-        res.json(threads);
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({error: "Failed to fetch threads"});
+        const messages = await getStore().getMessages(req.params.threadId);
+        if (!messages) return fail(res, 404, "Thread not found");
+        res.json(messages);
+    } catch (err) {
+        console.error(err);
+        fail(res, 500, "Failed to fetch chat");
     }
 });
 
-router.get("/thread/:threadId", async(req, res) => {
-    const {threadId} = req.params;
+router.patch("/thread/:threadId", async (req, res) => {
+    const title = (req.body?.title ?? "").trim();
+    if (!title) return fail(res, 400, "A title is required");
 
     try {
-        const thread = await Thread.findOne({threadId});
-
-        if(!thread) {
-            res.status(404).json({error: "Thread not found"});
-        }
-
-        res.json(thread.messages);
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({error: "Failed to fetch chat"});
+        const updated = await getStore().renameThread(req.params.threadId, title.slice(0, 120));
+        if (!updated) return fail(res, 404, "Thread not found");
+        res.json(updated);
+    } catch (err) {
+        console.error(err);
+        fail(res, 500, "Failed to rename thread");
     }
 });
 
 router.delete("/thread/:threadId", async (req, res) => {
-    const {threadId} = req.params;
-
     try {
-        const deletedThread = await Thread.findOneAndDelete({threadId});
-
-        if(!deletedThread) {
-            res.status(404).json({error: "Thread not found"});
-        }
-
-        res.status(200).json({success : "Thread deleted successfully"});
-
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({error: "Failed to delete thread"});
+        const deleted = await getStore().deleteThread(req.params.threadId);
+        if (!deleted) return fail(res, 404, "Thread not found");
+        res.json({success: true});
+    } catch (err) {
+        console.error(err);
+        fail(res, 500, "Failed to delete thread");
     }
 });
 
-router.post("/chat", async(req, res) => {
-    const {threadId, message} = req.body;
+const readChatBody = (req) => {
+    const {threadId, message = "", provider, regenerate = false} = req.body ?? {};
+    if (!threadId) return {error: "threadId is required"};
+    if (!regenerate && !message.trim()) return {error: "message is required"};
+    return {threadId, message: message.trim(), providerId: provider, regenerate: Boolean(regenerate)};
+};
 
-    if(!threadId || !message) {
-        res.status(400).json({error: "missing required fields"});
-    }
+/** Non-streaming answer — kept so simple clients and curl still work. */
+router.post("/chat", async (req, res) => {
+    const parsed = readChatBody(req);
+    if (parsed.error) return fail(res, 400, parsed.error);
 
     try {
-        let thread = await Thread.findOne({threadId});
-
-        if(!thread) {
-            //create a new thread in Db
-            thread = new Thread({
-                threadId,
-                title: message,
-                messages: [{role: "user", content: message}]
-            });
-        } else {
-            thread.messages.push({role: "user", content: message});
-        }
-
-        const assistantReply = await getOpenAIAPIResponse(message);
-
-        thread.messages.push({role: "assistant", content: assistantReply});
-        thread.updatedAt = new Date();
-
-        await thread.save();
-        res.json({reply: assistantReply});
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({error: "something went wrong"});
+        res.json(await completeAnswer(parsed));
+    } catch (err) {
+        console.error(err);
+        fail(res, 502, err.message || "Something went wrong");
     }
 });
 
+/** Streaming answer over Server-Sent Events. */
+router.post("/chat/stream", async (req, res) => {
+    const parsed = readChatBody(req);
+    if (parsed.error) return fail(res, 400, parsed.error);
 
+    res.writeHead(200, {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no"
+    });
+    res.flushHeaders?.();
 
+    const abort = new AbortController();
+    res.on("close", () => abort.abort());
+
+    const send = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
+
+    try {
+        // Breaking out of the loop would call the generator's .return() and kill
+        // it before it can save a partial answer, so keep draining and just stop
+        // writing once the client is gone. The abort makes that finish promptly.
+        for await (const event of streamAnswer({...parsed, signal: abort.signal})) {
+            if (!res.writableEnded) send(event);
+        }
+    } catch (err) {
+        console.error(err);
+        if (!res.writableEnded) send({type: "error", message: err.message || "Something went wrong"});
+    } finally {
+        if (!res.writableEnded) res.end();
+    }
+});
 
 export default router;
