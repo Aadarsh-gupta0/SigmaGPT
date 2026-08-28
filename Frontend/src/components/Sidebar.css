@@ -1,0 +1,310 @@
+.sidebar {
+    width: var(--rail-width);
+    flex: 0 0 var(--rail-width);
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 12px;
+    background: var(--bg-rail);
+    border-right: 1px solid var(--border);
+}
+
+/* Header */
+.sidebarHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 4px 0;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.brandText {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 0;
+}
+
+.brandText strong {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-strong);
+    letter-spacing: -0.01em;
+}
+
+.brandText span {
+    font-size: 11.5px;
+    color: var(--text-faint);
+}
+
+.railClose {
+    display: none;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+}
+
+.railClose:hover {
+    background: var(--bg-hover);
+}
+
+/* New chat */
+.newChat {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 550;
+    color: var(--text-on-brand);
+    background: var(--gradient-brand);
+    box-shadow: var(--shadow-sm);
+    transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.newChat:hover {
+    filter: brightness(1.07);
+}
+
+.newChat:active {
+    transform: translateY(1px);
+}
+
+/* Search */
+.searchField {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+    color: var(--text-faint);
+    transition: border-color 0.15s ease;
+}
+
+.searchField:focus-within {
+    border-color: var(--brand-500);
+}
+
+.searchField input {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 0;
+    border: none;
+    background: none;
+    font-size: 13.5px;
+    color: var(--text);
+}
+
+.searchField input:focus {
+    outline: none;
+}
+
+.searchField input::placeholder {
+    color: var(--text-faint);
+}
+
+/* Thread list */
+.threadList {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0 -4px;
+    padding: 0 4px;
+}
+
+.emptyHistory {
+    padding: 20px 8px;
+    font-size: 13px;
+    color: var(--text-faint);
+    text-align: center;
+}
+
+.threadGroup + .threadGroup {
+    margin-top: 14px;
+}
+
+.threadGroupTitle {
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+}
+
+.threadGroup ul {
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.threadRow {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    border-radius: var(--radius);
+    transition: background 0.12s ease;
+}
+
+.threadRow:hover {
+    background: var(--bg-hover);
+}
+
+.threadRow--active {
+    background: var(--bg-active);
+}
+
+.threadOpen {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 13.5px;
+    color: var(--text-muted);
+}
+
+.threadRow--active .threadOpen {
+    color: var(--text-strong);
+    font-weight: 550;
+}
+
+.threadTitle {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.threadActions {
+    display: flex;
+    gap: 1px;
+    padding-right: 5px;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+.threadRow:hover .threadActions,
+.threadRow:focus-within .threadActions {
+    opacity: 1;
+}
+
+.threadAction {
+    padding: 5px;
+    border-radius: 6px;
+    color: var(--text-faint);
+}
+
+.threadAction:hover {
+    background: var(--bg-hover);
+    color: var(--text-strong);
+}
+
+.threadAction--danger:hover {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+/* Rename + delete confirm */
+.threadRow--editing {
+    padding: 2px;
+}
+
+.threadRename {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--brand-500);
+    border-radius: var(--radius-sm);
+    background: var(--bg-raised);
+    font-size: 13.5px;
+}
+
+.threadRename:focus {
+    outline: none;
+}
+
+.threadConfirm {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-right: 5px;
+}
+
+.threadConfirmYes {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.threadConfirmNo {
+    padding: 4px;
+    border-radius: 6px;
+    color: var(--text-faint);
+}
+
+.threadConfirmNo:hover {
+    background: var(--bg-hover);
+}
+
+/* Footer */
+.sidebarFoot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 8px 4px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.statusDot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent);
+}
+
+.statusDot--down {
+    background: var(--danger);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 20%, transparent);
+}
+
+.statusText {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Mobile: the rail becomes a drawer */
+@media (max-width: 880px) {
+    .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar--open {
+        transform: none;
+    }
+
+    .railClose {
+        display: block;
+    }
+}

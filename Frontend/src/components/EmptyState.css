@@ -1,0 +1,116 @@
+.empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0 24px;
+    text-align: center;
+}
+
+.emptyMark {
+    margin-bottom: 18px;
+    filter: drop-shadow(0 10px 26px color-mix(in srgb, var(--brand-500) 34%, transparent));
+    animation: markIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes markIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.94);
+    }
+}
+
+.emptyTitle {
+    font-size: 27px;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    color: var(--text-strong);
+}
+
+.emptyLead {
+    margin-top: 7px;
+    font-size: 13.5px;
+    color: var(--text-muted);
+}
+
+.promptGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.promptCard {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    text-align: left;
+    color: var(--brand-500);
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.promptCard:hover {
+    border-color: var(--brand-400);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.promptTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.promptText {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.emptyHint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 560px;
+    margin-top: 26px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.emptyHint code {
+    padding: 1px 5px;
+    border-radius: 5px;
+    background: var(--bg-code);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-strong);
+}
+
+@media (max-width: 640px) {
+    .promptGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .emptyTitle {
+        font-size: 23px;
+    }
+}

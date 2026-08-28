@@ -1,35 +1,39 @@
-import './App.css';
-import Sidebar from "./Sidebar.jsx";
-import ChatWindow from "./ChatWindow.jsx";
-import {MyContext} from "./MyContext.jsx";
-import { useState } from 'react';
-import {v1 as uuidv1} from "uuid";
+import {useEffect, useState} from "react";
+import {ChatProvider} from "./context/ChatProvider.jsx";
+import {useTheme} from "./hooks/useTheme.js";
+import {useMediaQuery} from "./hooks/useMediaQuery.js";
+import Sidebar from "./components/Sidebar.jsx";
+import ChatWindow from "./components/ChatWindow.jsx";
+import Toast from "./components/Toast.jsx";
+import "./App.css";
 
-function App() {
-  const [prompt, setPrompt] = useState("");
-  const [reply, setReply] = useState(null);
-  const [currThreadId, setCurrThreadId] = useState(uuidv1());
-  const [prevChats, setPrevChats] = useState([]); //stores all chats of curr threads
-  const [newChat, setNewChat] = useState(true);
-  const [allThreads, setAllThreads] = useState([]);
+export default function App() {
+    const {theme, toggleTheme} = useTheme();
+    const isMobile = useMediaQuery("(max-width: 880px)");
+    const [menuOpen, setMenuOpen] = useState(false);
 
-  const providerValues = {
-    prompt, setPrompt,
-    reply, setReply,
-    currThreadId, setCurrThreadId,
-    newChat, setNewChat,
-    prevChats, setPrevChats,
-    allThreads, setAllThreads
-  }; 
+    // The drawer only exists on small screens.
+    useEffect(() => {
+        if (!isMobile) setMenuOpen(false);
+    }, [isMobile]);
 
-  return (
-    <div className='app'>
-      <MyContext.Provider value={providerValues}>
-          <Sidebar></Sidebar>
-          <ChatWindow></ChatWindow>
-        </MyContext.Provider>
-    </div>
-  )
+    return (
+        <ChatProvider>
+            <div className="app">
+                <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+
+                {isMobile && menuOpen && (
+                    <button className="scrim" onClick={() => setMenuOpen(false)} aria-label="Close menu" />
+                )}
+
+                <ChatWindow
+                    onOpenMenu={() => setMenuOpen(true)}
+                    theme={theme}
+                    onToggleTheme={toggleTheme}
+                />
+
+                <Toast />
+            </div>
+        </ChatProvider>
+    );
 }
-
-export default App

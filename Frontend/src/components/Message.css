@@ -1,0 +1,97 @@
+.msg {
+    display: flex;
+    gap: 14px;
+    padding: 4px 0 22px;
+}
+
+/* User turns sit right, as a compact bubble */
+.msg--user {
+    justify-content: flex-end;
+}
+
+.userBubble {
+    max-width: min(84%, 560px);
+    padding: 11px 16px;
+    border-radius: var(--radius-lg) var(--radius-lg) 5px var(--radius-lg);
+    background: var(--gradient-brand);
+    color: var(--text-on-brand);
+    font-size: 15px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Assistant turns run full width with an avatar */
+.msgAvatar {
+    flex: 0 0 26px;
+    margin-top: 2px;
+}
+
+.msgBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.msgMeta {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+.msgActions {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    margin-left: -8px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.msg--assistant:hover .msgActions,
+.msg--assistant:focus-within .msgActions {
+    opacity: 1;
+}
+
+.msgAction {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.msgAction:hover {
+    background: var(--bg-hover);
+    color: var(--text-strong);
+}
+
+/* Streaming caret — generated content on the final block, so it trails the
+   last word inline rather than dropping onto a line of its own. */
+.msg--streaming .markdown > *:last-child::after {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 1em;
+    margin-left: 3px;
+    vertical-align: -0.14em;
+    border-radius: 1px;
+    background: var(--brand-500);
+    animation: caretBlink 1s steps(2, start) infinite;
+}
+
+@keyframes caretBlink {
+    to {
+        visibility: hidden;
+    }
+}
+
+@media (max-width: 640px) {
+    .msgActions {
+        opacity: 1;
+    }
+}

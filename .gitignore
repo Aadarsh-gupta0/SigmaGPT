@@ -6,3 +6,9 @@ node_modules/
 
 # Environment variables
 .env
+
+# Local chat storage (used when no MongoDB is configured)
+.data/
+
+# Build output
+dist/

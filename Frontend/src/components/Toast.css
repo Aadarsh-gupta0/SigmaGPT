@@ -1,0 +1,54 @@
+.toast {
+    /* Anchored to the top so it never covers the composer, and centred over the
+       conversation rather than the viewport so it clears the sidebar. */
+    position: fixed;
+    left: calc(50% + var(--rail-width) / 2);
+    top: calc(var(--header-height) + 14px);
+    z-index: 90;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: min(520px, calc(100vw - 32px));
+    padding: 12px 12px 12px 14px;
+    border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow-lg);
+    color: var(--danger);
+    transform: translateX(-50%);
+    animation: toastIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+}
+
+.toastText {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.toastClose {
+    flex: none;
+    padding: 3px;
+    border-radius: 6px;
+    color: var(--text-faint);
+}
+
+.toastClose:hover {
+    background: var(--bg-hover);
+    color: var(--text-strong);
+}
+
+@media (max-width: 880px) {
+    /* The rail is a drawer here, so the conversation fills the viewport. */
+    .toast {
+        left: 50%;
+    }
+}
